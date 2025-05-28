@@ -10,12 +10,37 @@
 
 ## 使用方法
 
+### Windows系统
 
-### 使用打包后的exe文件
+#### 使用打包后的exe文件
 
 1. 右键点击打包后的exe文件，选择"以管理员身份运行"
 
+### Mac系统
+
+#### 使用Python脚本
+
+1. 打开终端(Terminal)
+2. 进入脚本所在目录
+3. 执行以下命令运行脚本:
+```
+sudo python3 cursor_clean_mac.py
+```
+
+#### 使用打包后的可执行文件
+
+1. 打开终端(Terminal)
+2. 进入可执行文件所在目录
+3. 执行以下命令运行:
+```
+sudo ./cursor_clean_mac
+```
+
+注意：在Mac系统中程序需要管理员权限才能运行，因为需要访问系统受保护的文件。
+
 ## 配置文件
+
+### Windows系统
 
 脚本会自动创建 `config.env` 配置文件，您可以根据需要修改其中的路径设置：
 
@@ -24,4 +49,16 @@
 # Cursor用户数据目录路径
 base_path = C:\Users\用户名\AppData\Roaming\Cursor\User
 ```
-exe文件会在dist文件夹中，配置文件需要和exe放在同一目录。 
+exe文件会在dist文件夹中，配置文件需要和exe放在同一目录。
+
+### Mac系统
+
+程序会自动创建 `config_mac.env` 配置文件，您可以根据需要修改其中的路径设置：
+
+```ini
+[PATHS]
+# Cursor用户数据目录路径
+base_path = ~/Library/Application Support/Cursor/User
+```
+
+配置文件需要和脚本或可执行文件放在同一目录。
