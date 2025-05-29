@@ -15,16 +15,13 @@
 
 下面是工具使用演示视频：
 
-[点击下载观看视频](20250529_222420.mp4)
+[点击下载观看视频](20250530_005756.mp4)
 
 <video width="640" height="360" controls>
-  <source src="20250529_222420.mp4" type="video/mp4">
+  <source src="20250530_005756.mp4" type="video/mp4">
   您的浏览器不支持视频标签
 </video>
 
-
-
-## 使用方法
 
 ### Windows系统
 
