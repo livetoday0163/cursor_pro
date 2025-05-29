@@ -4,11 +4,25 @@
 # 注意
 当还是不行时，一定要换ip，可能是ip污染（已经有少部分人出现这种情况了）多试几次
 
+
 ## 功能
 
 * 删除 `globalStorage/state.vscdb` 和 `globalStorage/state.vscdb.backup` 文件
 * 清空 `History` 文件夹内的所有内容
 * 删除 `workspaceStorage` 文件夹及其内容
+
+## 使用演示
+
+下面是工具使用演示视频：
+
+[点击下载观看视频](20250529_222420.mp4)
+
+<video width="640" height="360" controls>
+  <source src="20250529_222420.mp4" type="video/mp4">
+  您的浏览器不支持视频标签
+</video>
+
+
 
 ## 使用方法
 
