@@ -5,7 +5,7 @@
 当还是不行时，一定要换ip，可能是ip污染（已经有少部分人出现这种情况了）多试几次
 
 ## 解决问题
-![问题实例](ee959738cc1fe045a8e741b906a100fb.png)
+<img src="ee959738cc1fe045a8e741b906a100fb.png" alt="问题实例" width="400"/>
 ## 功能
 
 * 删除 `globalStorage/state.vscdb` 和 `globalStorage/state.vscdb.backup` 文件
@@ -79,4 +79,4 @@ base_path = ~/Library/Application Support/Cursor/User
 
 # 问题反馈群
 
-![Cursor交流群](fd3a08632bd448023e0484e7260615cb.jpg)
+<img src="fd3a08632bd448023e0484e7260615cb.jpg" alt="Cursor交流群" width="350" height="500" />
