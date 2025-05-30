@@ -4,7 +4,8 @@
 # 注意
 当还是不行时，一定要换ip，可能是ip污染（已经有少部分人出现这种情况了）多试几次
 
-
+## 解决问题
+![问题实例](ee959738cc1fe045a8e741b906a100fb.png)
 ## 功能
 
 * 删除 `globalStorage/state.vscdb` 和 `globalStorage/state.vscdb.backup` 文件
