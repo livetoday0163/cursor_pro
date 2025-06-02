@@ -77,6 +77,6 @@ base_path = ~/Library/Application Support/Cursor/User
 
 配置文件需要和脚本或可执行文件放在同一目录。
 
-# 问题反馈群
+# 问题反馈群（拉你进群）
 
-<img src="fd3a08632bd448023e0484e7260615cb.jpg" alt="Cursor交流群" width="350" height="500" />
+<img src="3b3cfb61ab89c229f1a121d664d3904d.jpg" alt="Cursor交流群" width="350" height="500" />
