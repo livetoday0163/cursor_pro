@@ -79,4 +79,4 @@ base_path = ~/Library/Application Support/Cursor/User
 
 # 问题反馈群（拉你进群）
 
-<img src="2bf6d478820bf7c6b2155ba704fac3ed.jpg" alt="Cursor交流群" width="350" height="500" />
+<img src="20241a9cd11d4579c23ef2465febec0f.jpg" alt="Cursor交流群" width="350" height="500" />
