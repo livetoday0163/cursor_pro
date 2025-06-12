@@ -2,7 +2,7 @@
 
 突破claude-3.7的限制。（注意把自己的提示词先备份好）
 # 注意
-当还是不行时，一定要换ip，可能是ip污染（已经有少部分人出现这种情况了）多试几次
+当还是不行时，一定要换ip，可能是ip污染（已经有少部分人出现这种情况了）多试几次，mac用户先运行程序来解决问题（效果是一样的），暑假我会完善一些功能的。
 
 ## 解决问题
 <img src="ee959738cc1fe045a8e741b906a100fb.png" alt="问题实例" width="400"/>
@@ -77,6 +77,6 @@ base_path = ~/Library/Application Support/Cursor/User
 
 配置文件需要和脚本或可执行文件放在同一目录。
 
-# 问题反馈群（拉你进群）
+# 问题反馈群
 
 <img src="20241a9cd11d4579c23ef2465febec0f.jpg" alt="Cursor交流群" width="350" height="500" />
