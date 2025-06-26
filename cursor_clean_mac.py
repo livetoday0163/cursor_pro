@@ -4,6 +4,15 @@ import sys
 import getpass
 import configparser
 import subprocess
+import json
+import time
+import random
+import string
+import hashlib
+import uuid
+from pathlib import Path
+import tkinter as tk
+from tkinter import messagebox, ttk
 
 def is_root():
     """检查脚本是否以root权限运行"""
@@ -57,7 +66,7 @@ def clean_cursor_files():
     base_path = config['PATHS']['base_path']
     base_path = os.path.expanduser(base_path)  # 确保波浪线被正确解析
     
-    print(f"清理 {base_path} 中的文件...")
+    result_message = f"清理 {base_path} 中的文件...\n"
     
     files_to_delete = [
         os.path.join(base_path, 'globalStorage', 'state.vscdb'),
@@ -77,11 +86,11 @@ def clean_cursor_files():
         try:
             if os.path.exists(file_path):
                 os.remove(file_path)
-                print(f"已删除文件: {file_path}")
+                result_message += f"已删除文件: {file_path}\n"
             else:
-                print(f"文件不存在: {file_path}")
+                result_message += f"文件不存在: {file_path}\n"
         except Exception as e:
-            print(f"删除文件 {file_path} 失败: {e}")
+            result_message += f"删除文件 {file_path} 失败: {e}\n"
     
     # 清空指定文件夹
     for folder_path in folders_to_clean:
@@ -95,29 +104,269 @@ def clean_cursor_files():
                         elif os.path.isdir(item_path):
                             shutil.rmtree(item_path)
                     except Exception as e:
-                        print(f"删除 {item_path} 失败: {e}")
-                print(f"已清空文件夹: {folder_path}")
+                        result_message += f"删除 {item_path} 失败: {e}\n"
+                result_message += f"已清空文件夹: {folder_path}\n"
             else:
-                print(f"文件夹不存在: {folder_path}")
+                result_message += f"文件夹不存在: {folder_path}\n"
         except Exception as e:
-            print(f"清空文件夹 {folder_path} 失败: {e}")
+            result_message += f"清空文件夹 {folder_path} 失败: {e}\n"
     
     # 删除指定文件夹
     for folder_path in folders_to_delete:
         try:
             if os.path.exists(folder_path):
                 shutil.rmtree(folder_path)
-                print(f"已删除文件夹: {folder_path}")
+                result_message += f"已删除文件夹: {folder_path}\n"
             else:
-                print(f"文件夹不存在: {folder_path}")
+                result_message += f"文件夹不存在: {folder_path}\n"
         except Exception as e:
-            print(f"删除文件夹 {folder_path} 失败: {e}")
+            result_message += f"删除文件夹 {folder_path} 失败: {e}\n"
+    
+    result_message += "清理完成！"
+    return result_message
+
+# 以下为新增功能
+
+def get_config_path():
+    """获取配置文件路径"""
+    base_path = os.path.expanduser("~/Library/Application Support/Cursor/User/globalStorage")
+    return os.path.join(base_path, "storage.json")
+
+def is_cursor_running():
+    """检查 Cursor 是否正在运行"""
+    try:
+        output = subprocess.check_output(['ps', 'aux'], stderr=subprocess.DEVNULL).decode('utf-8', errors='ignore')
+        return any('cursor' in line.lower() for line in output.split('\n'))
+    except subprocess.SubprocessError:
+        return False
+    except Exception as e:
+        return False
+
+def check_cursor_process(func):
+    """装饰器：检查 Cursor 进程"""
+    def wrapper(*args, **kwargs):
+        if is_cursor_running():
+            if messagebox.askyesno("警告", "检测到 Cursor 正在运行！\n请先关闭 Cursor 再执行操作，否则修改可能会被覆盖。\n是否继续？"):
+                return func(*args, **kwargs)
+            return "已取消操作"
+        return func(*args, **kwargs)
+    return wrapper
+
+def kill_cursor_processes():
+    """终止所有 Cursor 相关进程"""
+    result_message = ""
+    try:
+        # 使用 pgrep 查找进程
+        try:
+            # 使用 pgrep 查找进程ID
+            pids = subprocess.check_output(['pgrep', '-i', 'cursor'], 
+                                        stderr=subprocess.DEVNULL).decode().split()
+            for pid in pids:
+                try:
+                    os.kill(int(pid), 15)  # SIGTERM
+                    time.sleep(0.1)
+                    try:
+                        os.kill(int(pid), 0)  # 检查进程是否还存在
+                        os.kill(int(pid), 9)  # SIGKILL
+                    except ProcessLookupError:
+                        pass  # 进程已经终止
+                except ProcessLookupError:
+                    continue  # 跳过已经不存在的进程
+            result_message += "已尝试终止 Cursor 进程\n"
+        except subprocess.CalledProcessError:
+            result_message += "未找到 Cursor 进程\n"
+        except PermissionError:
+            result_message += "没有权限终止进程，请确保以 root 权限运行\n"
+    except Exception as e:
+        result_message += f"终止进程时出错: {str(e)}\n"
+    
+    return result_message
+
+@check_cursor_process
+def reset_machine_ids():
+    """重置机器 ID"""
+    CONFIG_PATH = get_config_path()
+    result_message = ""
+    try:
+        if not os.path.exists(CONFIG_PATH):
+            result_message = f"配置文件不存在: {CONFIG_PATH}"
+            return result_message
+        
+        with open(CONFIG_PATH, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+        
+        # 删除遥测 ID
+        data.pop("telemetry.macMachineId", None)
+        data.pop("telemetry.machineId", None)
+        
+        with open(CONFIG_PATH, 'w', encoding='utf-8') as f:
+            json.dump(data, f, indent=2, ensure_ascii=False)
+        result_message = "已成功重置机器 ID"
+    except Exception as e:
+        result_message = f"重置机器 ID 时出错: {str(e)}"
+    
+    return result_message
+
+@check_cursor_process
+def generate_random_machine_ids():
+    """生成随机的机器 ID"""
+    CONFIG_PATH = get_config_path()
+    result_message = ""
+    try:
+        if not os.path.exists(CONFIG_PATH):
+            result_message = f"配置文件不存在: {CONFIG_PATH}"
+            return result_message
+        
+        # 生成随机字符串并计算其哈希值
+        def generate_random_hash():
+            random_str = ''.join(random.choices(string.ascii_letters + string.digits, k=32))
+            random_str += str(uuid.uuid4())  # 添加 UUID 增加随机性
+            return hashlib.sha256(random_str.encode()).hexdigest()
+        
+        with open(CONFIG_PATH, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+        
+        # 生成新的 ID
+        data["telemetry.macMachineId"] = generate_random_hash()
+        data["telemetry.machineId"] = generate_random_hash()
+        
+        with open(CONFIG_PATH, 'w', encoding='utf-8') as f:
+            json.dump(data, f, indent=2, ensure_ascii=False)
+        
+        result_message = "已生成新的机器 ID：\n"
+        result_message += f"Mac机器ID: {data['telemetry.macMachineId']}\n"
+        result_message += f"机器ID: {data['telemetry.machineId']}"
+    except Exception as e:
+        result_message = f"生成机器 ID 时出错: {str(e)}"
+    
+    return result_message
+
+@check_cursor_process
+def break_claude_37_limit():
+    """突破Claude 3.7 Sonnet限制"""
+    CONFIG_PATH = get_config_path()
+    result_message = ""
+    try:
+        if not os.path.exists(CONFIG_PATH):
+            result_message = f"配置文件不存在: {CONFIG_PATH}"
+            return result_message
+        
+        with open(CONFIG_PATH, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+        
+        # 设置突破限制的关键值
+        data["cursor.paid"] = True
+        data["cursor.openaiFreeTier"] = True
+        data["cursor.proTier"] = True
+        
+        with open(CONFIG_PATH, 'w', encoding='utf-8') as f:
+            json.dump(data, f, indent=2, ensure_ascii=False)
+        result_message = "已成功设置突破 Claude 3.7 Sonnet 限制"
+    except Exception as e:
+        result_message = f"突破限制时出错: {str(e)}"
+    
+    return result_message
+
+class CursorEnhanceTool:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("Cursor 增强工具 (Mac版)")
+        self.root.geometry("600x400")
+        self.root.resizable(True, True)
+        self.setup_ui()
+    
+    def setup_ui(self):
+        # 设置主框架
+        main_frame = ttk.Frame(self.root, padding="20 20 20 20")
+        main_frame.pack(fill=tk.BOTH, expand=True)
+        
+        # 标题
+        ttk.Label(main_frame, text="Cursor 增强工具 (Mac版)", font=("Arial", 16, "bold")).pack(pady=10)
+        
+        # 功能按钮
+        btn_frame = ttk.Frame(main_frame)
+        btn_frame.pack(fill=tk.X, pady=10)
+        
+        ttk.Button(btn_frame, text="1. 重置机器码", command=self.reset_machine_code).pack(fill=tk.X, pady=5)
+        ttk.Button(btn_frame, text="2. 突破 Claude 3.7 Sonnet 限制", command=self.break_limit).pack(fill=tk.X, pady=5)
+        ttk.Button(btn_frame, text="3. 清理 Cursor 应用数据", command=self.clean_data).pack(fill=tk.X, pady=5)
+        ttk.Button(btn_frame, text="4. 终止 Cursor 进程", command=self.kill_process).pack(fill=tk.X, pady=5)
+        ttk.Button(btn_frame, text="5. 退出", command=self.root.quit).pack(fill=tk.X, pady=5)
+        
+        # 结果文本框
+        result_frame = ttk.LabelFrame(main_frame, text="操作结果")
+        result_frame.pack(fill=tk.BOTH, expand=True, pady=10)
+        
+        self.result_text = tk.Text(result_frame, wrap=tk.WORD, height=10)
+        self.result_text.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
+        
+        # 滚动条
+        scrollbar = ttk.Scrollbar(self.result_text, command=self.result_text.yview)
+        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        self.result_text.config(yscrollcommand=scrollbar.set)
+        
+        # 状态栏
+        self.status_var = tk.StringVar()
+        self.status_var.set("就绪")
+        status_bar = ttk.Label(self.root, textvariable=self.status_var, relief=tk.SUNKEN, anchor=tk.W)
+        status_bar.pack(side=tk.BOTTOM, fill=tk.X)
+    
+    def show_result(self, message):
+        self.result_text.delete(1.0, tk.END)
+        self.result_text.insert(tk.END, message)
+    
+    def reset_machine_code(self):
+        self.status_var.set("正在重置机器码...")
+        self.root.update()
+        
+        # 先终止Cursor进程
+        kill_result = kill_cursor_processes()
+        
+        # 生成随机机器ID
+        result = generate_random_machine_ids()
+        
+        self.show_result(f"{kill_result}\n\n{result}")
+        self.status_var.set("重置机器码完成")
+    
+    def break_limit(self):
+        self.status_var.set("正在突破 Claude 3.7 Sonnet 限制...")
+        self.root.update()
+        
+        # 先终止Cursor进程
+        kill_result = kill_cursor_processes()
+        
+        # 突破限制
+        result = break_claude_37_limit()
+        
+        self.show_result(f"{kill_result}\n\n{result}")
+        self.status_var.set("突破限制完成")
+    
+    def clean_data(self):
+        self.status_var.set("正在清理 Cursor 应用数据...")
+        self.root.update()
+        
+        # 先终止Cursor进程
+        kill_result = kill_cursor_processes()
+        
+        # 清理文件
+        result = clean_cursor_files()
+        
+        self.show_result(f"{kill_result}\n\n{result}")
+        self.status_var.set("清理完成")
+    
+    def kill_process(self):
+        self.status_var.set("正在终止 Cursor 进程...")
+        self.root.update()
+        
+        result = kill_cursor_processes()
+        
+        self.show_result(result)
+        self.status_var.set("进程终止完成")
 
 def main():
     """主函数"""
     if not is_root():
-        print("需要root权限来运行此程序")
-        print("请使用 sudo 重新运行")
+        messagebox.showerror("权限错误", "需要root权限来运行此程序\n请使用 sudo 重新运行")
         
         # 判断是否为打包后的应用
         if getattr(sys, 'frozen', False):
@@ -130,10 +379,9 @@ def main():
         subprocess.call(['sudo', app_path])
         return
     
-    print("开始清理 Cursor 应用数据...")
-    clean_cursor_files()
-    print("清理完成！")
-    input("按任意键退出...")
+    root = tk.Tk()
+    app = CursorEnhanceTool(root)
+    root.mainloop()
 
 if __name__ == "__main__":
     main() 
