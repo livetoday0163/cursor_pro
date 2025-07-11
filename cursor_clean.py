@@ -138,13 +138,11 @@ def is_cursor_running():
     except Exception as e:
         return False
 
+# 移除警告对话框，直接执行函数
 def check_cursor_process(func):
-    """装饰器：检查 Cursor 进程"""
+    """装饰器：检查 Cursor 进程，但不显示警告"""
     def wrapper(*args, **kwargs):
-        if is_cursor_running():
-            if messagebox.askyesno("警告", "检测到 Cursor 正在运行！\n请先关闭 Cursor 再执行操作，否则修改可能会被覆盖。\n是否继续？"):
-                return func(*args, **kwargs)
-            return "已取消操作"
+        # 直接执行函数，不显示警告
         return func(*args, **kwargs)
     return wrapper
 
@@ -299,10 +297,9 @@ class CursorEnhanceTool:
         btn_frame.pack(fill=tk.X, pady=10)
         
         ttk.Button(btn_frame, text="1. 重置机器码", command=self.reset_machine_code).pack(fill=tk.X, pady=5)
-        ttk.Button(btn_frame, text="2. 突破 Claude 3.7 Sonnet 限制", command=self.break_limit).pack(fill=tk.X, pady=5)
-        ttk.Button(btn_frame, text="3. 清理 Cursor 应用数据", command=self.clean_data).pack(fill=tk.X, pady=5)
-        ttk.Button(btn_frame, text="4. 终止 Cursor 进程", command=self.kill_process).pack(fill=tk.X, pady=5)
-        ttk.Button(btn_frame, text="5. 退出", command=self.root.quit).pack(fill=tk.X, pady=5)
+        ttk.Button(btn_frame, text="2. 突破 Claude 3.7 Sonnet 限制并清理数据", command=self.break_limit_and_clean).pack(fill=tk.X, pady=5)
+        ttk.Button(btn_frame, text="3. 终止 Cursor 进程", command=self.kill_process).pack(fill=tk.X, pady=5)
+        ttk.Button(btn_frame, text="4. 退出", command=self.root.quit).pack(fill=tk.X, pady=5)
         
         # 结果文本框
         result_frame = ttk.LabelFrame(main_frame, text="操作结果")
@@ -339,31 +336,22 @@ class CursorEnhanceTool:
         self.show_result(f"{kill_result}\n\n{result}")
         self.status_var.set("重置机器码完成")
     
-    def break_limit(self):
-        self.status_var.set("正在突破 Claude 3.7 Sonnet 限制...")
+    def break_limit_and_clean(self):
+        """突破限制并清理数据（合并选项2和3）"""
+        self.status_var.set("正在突破限制并清理数据...")
         self.root.update()
         
         # 先终止Cursor进程
         kill_result = kill_cursor_processes()
         
         # 突破限制
-        result = break_claude_37_limit()
-        
-        self.show_result(f"{kill_result}\n\n{result}")
-        self.status_var.set("突破限制完成")
-    
-    def clean_data(self):
-        self.status_var.set("正在清理 Cursor 应用数据...")
-        self.root.update()
-        
-        # 先终止Cursor进程
-        kill_result = kill_cursor_processes()
+        limit_result = break_claude_37_limit()
         
         # 清理文件
-        result = clean_cursor_files()
+        clean_result = clean_cursor_files()
         
-        self.show_result(f"{kill_result}\n\n{result}")
-        self.status_var.set("清理完成")
+        self.show_result(f"{kill_result}\n\n{limit_result}\n\n{clean_result}")
+        self.status_var.set("突破限制和清理数据完成")
     
     def kill_process(self):
         self.status_var.set("正在终止 Cursor 进程...")
