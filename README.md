@@ -92,7 +92,7 @@ base_path = ~/Library/Application Support/Cursor/User
 
 ## 问题反馈群（拉你进群）
 
-<img src="ba7b1c867859f1b72250751f4218ed4.jpg" alt="Cursor交流群" width="350" height="500" />
+<img src="39f2f2dd82dfb8ac75f13138d592582.jpg" alt="Cursor交流群" width="350" height="500" />
 
 ## 免责声明
 
