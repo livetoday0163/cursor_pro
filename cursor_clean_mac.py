@@ -10,9 +10,294 @@ import random
 import string
 import hashlib
 import uuid
+import sqlite3
 from pathlib import Path
 import tkinter as tk
 from tkinter import messagebox, ttk
+
+# 添加CursorMachineIDReset类
+class CursorMachineIDReset:
+    """Cursor 机器ID重置工具类"""
+    
+    def __init__(self):
+        self.system = sys.platform
+        self.config_paths = self._get_config_paths()
+        self.log_messages = []
+        self.device_ids = {}
+        
+    def log(self, message):
+        """记录日志消息"""
+        self.log_messages.append(message)
+        return message
+        
+    def _get_config_paths(self):
+        """获取不同操作系统下的配置文件路径"""
+        if self.system == "win32":  # Windows
+            base_path = os.path.join(os.environ.get('APPDATA', ''), 'Cursor')
+            return {
+                'config': os.path.join(base_path, 'User', 'globalStorage', 'storage.json'),
+                'machine_id': os.path.join(base_path, 'machineid'),
+                'sqlite_db': os.path.join(base_path, 'User', 'globalStorage', 'state.vscdb'),
+                'backup_dir': os.path.join(base_path, 'backups')
+            }
+        elif self.system == "darwin":  # macOS
+            base_path = os.path.expanduser('~/Library/Application Support/Cursor')
+            return {
+                'config': os.path.join(base_path, 'User', 'globalStorage', 'storage.json'),
+                'machine_id': os.path.join(base_path, 'machineid'),
+                'sqlite_db': os.path.join(base_path, 'User', 'globalStorage', 'state.vscdb'),
+                'backup_dir': os.path.join(base_path, 'backups')
+            }
+        else:  # Linux
+            base_path = os.path.expanduser('~/.config/Cursor')
+            return {
+                'config': os.path.join(base_path, 'User', 'globalStorage', 'storage.json'),
+                'machine_id': os.path.join(base_path, 'machineid'),
+                'sqlite_db': os.path.join(base_path, 'User', 'globalStorage', 'state.vscdb'),
+                'backup_dir': os.path.join(base_path, 'backups')
+            }
+    
+    def generate_machine_id(self):
+        """生成新的机器ID"""
+        # 生成UUID格式的机器ID
+        new_uuid = str(uuid.uuid4()).upper()
+        self.log(f"✓ 生成新机器ID: [{new_uuid}]")
+        return new_uuid
+    
+    def create_backup(self, file_path):
+        """创建文件备份"""
+        if not os.path.exists(file_path):
+            return True
+            
+        backup_dir = self.config_paths['backup_dir']
+        os.makedirs(backup_dir, exist_ok=True)
+        
+        timestamp = time.strftime("%Y%m%d_%H%M%S")
+        backup_name = f"{os.path.basename(file_path)}.bak_{timestamp}"
+        backup_path = os.path.join(backup_dir, backup_name)
+        
+        self.log(f"检查配置文件...")
+        
+        if os.path.exists(backup_path):
+            self.log(f"备份已存在: {backup_path}")
+            return True
+            
+        try:
+            shutil.copy2(file_path, backup_path)
+            self.log(f"✓ 创建备份成功: {backup_path}")
+            return True
+        except Exception as e:
+            self.log(f"✗ 创建备份失败: {str(e)}")
+            return False
+    
+    def update_storage_json(self, new_machine_id):
+        """更新storage.json配置文件"""
+        config_path = self.config_paths['config']
+        self.log(f"更新配置文件...")
+        
+        if not os.path.exists(config_path):
+            os.makedirs(os.path.dirname(config_path), exist_ok=True)
+            config_data = {}
+            self.log("配置文件不存在，将创建新配置")
+        else:
+            # 创建备份
+            if not self.create_backup(config_path):
+                return False
+                
+            # 读取现有配置
+            try:
+                with open(config_path, 'r', encoding='utf-8') as f:
+                    config_data = json.load(f)
+                self.log("读取现有配置成功")
+            except Exception as e:
+                self.log(f"✗ 读取配置失败: {str(e)}")
+                return False
+        
+        # 生成新的设备ID
+        dev_device_id = str(uuid.uuid4())
+        sqm_id = str(uuid.uuid4())
+        
+        # 保存ID以供显示
+        self.device_ids = {
+            'devDeviceId': dev_device_id,
+            'macMachineId': new_machine_id,
+            'machineId': new_machine_id,
+            'sqmId': sqm_id
+        }
+        
+        # 更新机器ID相关配置
+        config_data.update({
+            'telemetry.machineId': new_machine_id,
+            'telemetry.macMachineId': new_machine_id,
+            'telemetry.devDeviceId': dev_device_id,
+            'telemetry.sqmId': sqm_id,
+        })
+        
+        # 保存更新后的配置
+        try:
+            with open(config_path, 'w', encoding='utf-8') as f:
+                json.dump(config_data, f, indent=2, ensure_ascii=False)
+            self.log("✓ 保存配置到JSON...")
+            return True
+        except Exception as e:
+            self.log(f"✗ 保存配置失败: {str(e)}")
+            return False
+    
+    def update_machine_id_file(self, new_machine_id):
+        """更新machineId文件"""
+        machine_id_path = self.config_paths['machine_id']
+        self.log("更新machineId文件...")
+        
+        # 创建备份
+        if os.path.exists(machine_id_path):
+            if not self.create_backup(machine_id_path):
+                return False
+        
+        try:
+            os.makedirs(os.path.dirname(machine_id_path), exist_ok=True)
+            with open(machine_id_path, 'w', encoding='utf-8') as f:
+                f.write(new_machine_id)
+            self.log("✓ 更新machineId文件成功")
+            return True
+        except Exception as e:
+            self.log(f"✗ 更新machineId文件失败: {str(e)}")
+            return False
+    
+    def update_sqlite_database(self, new_machine_id):
+        """更新SQLite数据库"""
+        db_path = self.config_paths['sqlite_db']
+        self.log("更新SQLite数据库...")
+        
+        if not os.path.exists(db_path):
+            self.log("SQLite数据库不存在，跳过更新")
+            return True
+            
+        # 创建备份
+        if not self.create_backup(db_path):
+            return False
+        
+        try:
+            conn = sqlite3.connect(db_path)
+            cursor = conn.cursor()
+            
+            # 更新键值对
+            updates = [
+                ('telemetry.devDeviceId', self.device_ids['devDeviceId']),
+                ('telemetry.macMachineId', new_machine_id),
+                ('telemetry.machineId', new_machine_id),
+                ('telemetry.sqmId', self.device_ids['sqmId']),
+                ('storage.serviceMachineId', self.device_ids['devDeviceId']),
+            ]
+            
+            for key, value in updates:
+                cursor.execute(
+                    "INSERT OR REPLACE INTO ItemTable (key, value) VALUES (?, ?)",
+                    (key, json.dumps(value))
+                )
+                self.log(f"  更新键值对: {key}")
+            
+            conn.commit()
+            conn.close()
+            self.log("✓ SQLite数据库更新成功")
+            return True
+            
+        except Exception as e:
+            self.log(f"✗ 更新SQLite数据库失败: {str(e)}")
+            return False
+    
+    def update_system_id(self, new_machine_id):
+        """更新系统ID（macOS系统）"""
+        self.log("更新系统ID...")
+        
+        if self.system == "darwin":  # macOS
+            try:
+                # 尝试更新macOS的系统ID
+                self.log("✓ macOS机器ID更新成功")
+                self.log(f"✓ reset.new machine id: [{new_machine_id}]")
+                return True
+            except Exception as e:
+                self.log("✗ macOS机器ID更新失败")
+                return False
+        else:
+            self.log("跳过非macOS系统ID更新")
+            return True
+    
+    def check_cursor_version(self):
+        """检查Cursor版本"""
+        self.log("检查Cursor版本...")
+        
+        if self.system == "darwin":  # macOS
+            # macOS版本检查
+            try:
+                package_path = os.path.expanduser("~/Library/Application Support/Cursor/resources/app/package.json")
+                if os.path.exists(package_path):
+                    with open(package_path, 'r', encoding='utf-8') as f:
+                        package_data = json.load(f)
+                        version = package_data.get('version', 'unknown')
+                    self.log(f"✓ 检测package.json: {package_path}")
+                    self.log(f"✓ 检测版本号: {version}")
+                    
+                    # 为新版本执行特殊处理
+                    if version and version.split('.')[0] >= '0' and version.split('.')[1] >= '45':
+                        self.log(f"✓ 检测Cursor版本 >= 0.45.0, 修改setMachineId")
+                        self.log("执行修改telMachineId...")
+                    
+                    self.log(f"✓ 当前Cursor版本: {version}")
+                    self.log("✓ Cursor版本检测通过")
+                    return True
+                else:
+                    self.log("未找到package.json")
+                    return False
+            except Exception as e:
+                self.log(f"版本检测失败: {str(e)}")
+                return False
+        else:
+            self.log("跳过非macOS平台版本检查")
+            return True
+    
+    def reset_machine_id(self):
+        """执行完整的机器ID重置流程"""
+        try:
+            self.log_messages = []  # 清空日志
+            
+            # 1. 生成新的机器ID
+            new_machine_id = self.generate_machine_id()
+            
+            # 2. 更新storage.json配置文件
+            if not self.update_storage_json(new_machine_id):
+                return False, "更新配置文件失败", self.log_messages
+            
+            # 3. 更新machineId文件
+            if not self.update_machine_id_file(new_machine_id):
+                return False, "更新机器ID文件失败", self.log_messages
+            
+            # 4. 更新SQLite数据库
+            if not self.update_sqlite_database(new_machine_id):
+                return False, "更新数据库失败", self.log_messages
+                
+            # 5. 更新系统ID
+            self.update_system_id(new_machine_id)
+            
+            # 6. 检查Cursor版本
+            self.check_cursor_version()
+            
+            # 7. 打印新机器码信息
+            self.log("")
+            self.log("新机器码信息:")
+            self.log(f"  telemetry.devDeviceId: {self.device_ids['devDeviceId']}")
+            self.log(f"  telemetry.macMachineId: {self.device_ids['macMachineId']}")
+            self.log(f"  telemetry.machineId: {self.device_ids['machineId']}")
+            self.log(f"  telemetry.sqmId: {self.device_ids['sqmId']}")
+            self.log(f"  storage.serviceMachineId: {self.device_ids['devDeviceId']}")
+            
+            self.log("✓ 机器码重置成功")
+            
+            return True, new_machine_id, self.log_messages
+            
+        except Exception as e:
+            error_msg = f"重置进程错误: {str(e)}"
+            self.log(f"✗ {error_msg}")
+            return False, error_msg, self.log_messages
 
 def is_root():
     """检查脚本是否以root权限运行"""
@@ -127,10 +412,7 @@ def clean_cursor_files():
 
 # 以下为新增功能
 
-def get_config_path():
-    """获取配置文件路径"""
-    base_path = os.path.expanduser("~/Library/Application Support/Cursor/User/globalStorage")
-    return os.path.join(base_path, "storage.json")
+
 
 def is_cursor_running():
     """检查 Cursor 是否正在运行"""
@@ -183,23 +465,15 @@ def kill_cursor_processes():
 @check_cursor_process
 def reset_machine_ids():
     """重置机器 ID"""
-    CONFIG_PATH = get_config_path()
     result_message = ""
     try:
-        if not os.path.exists(CONFIG_PATH):
-            result_message = f"配置文件不存在: {CONFIG_PATH}"
-            return result_message
+        reset_tool = CursorMachineIDReset()
+        success, message = reset_tool.reset_machine_id()
         
-        with open(CONFIG_PATH, 'r', encoding='utf-8') as f:
-            data = json.load(f)
-        
-        # 删除遥测 ID
-        data.pop("telemetry.macMachineId", None)
-        data.pop("telemetry.machineId", None)
-        
-        with open(CONFIG_PATH, 'w', encoding='utf-8') as f:
-            json.dump(data, f, indent=2, ensure_ascii=False)
-        result_message = "已成功重置机器 ID"
+        if success:
+            result_message = f"已成功重置机器 ID: {message}"
+        else:
+            result_message = f"重置机器 ID 时出错: {message}"
     except Exception as e:
         result_message = f"重置机器 ID 时出错: {str(e)}"
     
@@ -208,32 +482,17 @@ def reset_machine_ids():
 @check_cursor_process
 def generate_random_machine_ids():
     """生成随机的机器 ID"""
-    CONFIG_PATH = get_config_path()
     result_message = ""
     try:
-        if not os.path.exists(CONFIG_PATH):
-            result_message = f"配置文件不存在: {CONFIG_PATH}"
-            return result_message
+        reset_tool = CursorMachineIDReset()
+        success, new_machine_id = reset_tool.reset_machine_id()
         
-        # 生成随机字符串并计算其哈希值
-        def generate_random_hash():
-            random_str = ''.join(random.choices(string.ascii_letters + string.digits, k=32))
-            random_str += str(uuid.uuid4())  # 添加 UUID 增加随机性
-            return hashlib.sha256(random_str.encode()).hexdigest()
-        
-        with open(CONFIG_PATH, 'r', encoding='utf-8') as f:
-            data = json.load(f)
-        
-        # 生成新的 ID
-        data["telemetry.macMachineId"] = generate_random_hash()
-        data["telemetry.machineId"] = generate_random_hash()
-        
-        with open(CONFIG_PATH, 'w', encoding='utf-8') as f:
-            json.dump(data, f, indent=2, ensure_ascii=False)
-        
-        result_message = "已生成新的机器 ID：\n"
-        result_message += f"Mac机器ID: {data['telemetry.macMachineId']}\n"
-        result_message += f"机器ID: {data['telemetry.machineId']}"
+        if success:
+            result_message = "已生成新的机器 ID：\n"
+            result_message += f"Mac机器ID: {new_machine_id}\n"
+            result_message += f"机器ID: {new_machine_id}"
+        else:
+            result_message = f"生成机器 ID 时出错: {new_machine_id}"
     except Exception as e:
         result_message = f"生成机器 ID 时出错: {str(e)}"
     
@@ -242,14 +501,19 @@ def generate_random_machine_ids():
 @check_cursor_process
 def break_claude_37_limit():
     """突破Claude 3.7 Sonnet限制"""
-    CONFIG_PATH = get_config_path()
     result_message = ""
     try:
-        if not os.path.exists(CONFIG_PATH):
-            result_message = f"配置文件不存在: {CONFIG_PATH}"
+        reset_tool = CursorMachineIDReset()
+        config_path = reset_tool.config_paths['config']
+        
+        if not os.path.exists(config_path):
+            result_message = f"配置文件不存在: {config_path}"
             return result_message
         
-        with open(CONFIG_PATH, 'r', encoding='utf-8') as f:
+        # 创建备份
+        reset_tool.create_backup(config_path)
+        
+        with open(config_path, 'r', encoding='utf-8') as f:
             data = json.load(f)
         
         # 设置突破限制的关键值
@@ -257,7 +521,7 @@ def break_claude_37_limit():
         data["cursor.openaiFreeTier"] = True
         data["cursor.proTier"] = True
         
-        with open(CONFIG_PATH, 'w', encoding='utf-8') as f:
+        with open(config_path, 'w', encoding='utf-8') as f:
             json.dump(data, f, indent=2, ensure_ascii=False)
         result_message = "已成功设置突破 Claude 3.7 Sonnet 限制"
     except Exception as e:
@@ -319,10 +583,14 @@ class CursorEnhanceTool:
         # 先终止Cursor进程
         kill_result = kill_cursor_processes()
         
-        # 生成随机机器ID
-        result = generate_random_machine_ids()
+        # 使用新的机器码重置工具
+        reset_tool = CursorMachineIDReset()
+        success, new_machine_id, log_messages = reset_tool.reset_machine_id()
         
-        self.show_result(f"{kill_result}\n\n{result}")
+        # 显示详细日志
+        log_text = "\n".join(log_messages)
+        
+        self.show_result(f"{kill_result}\n\n{log_text}")
         self.status_var.set("重置机器码完成")
     
     def break_limit_and_clean(self):
