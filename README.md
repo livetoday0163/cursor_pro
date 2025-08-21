@@ -94,6 +94,3 @@ base_path = ~/Library/Application Support/Cursor/User
 ## 免责声明
 
 本工具仅用于学习和研究目的，请勿用于商业用途。使用本工具产生的任何问题由用户自行承担。请在使用前备份重要的Cursor配置。
-
-
-[![Powered by DartNode](https://dartnode.com/branding/DN-Open-Source-sm.png)](https://dartnode.com "Powered by DartNode - Free VPS for Open Source")
